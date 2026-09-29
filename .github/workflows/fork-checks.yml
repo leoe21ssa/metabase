@@ -1,0 +1,74 @@
+# Fork-only CI (spec 001, T3). Metabase's own workflows stay disabled in the fork.
+name: Fork checks
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - name: Prepare front-end environment
+        uses: ./.github/actions/prepare-frontend
+      # test-unit compiles ClojureScript, which needs java; ESLint and tsc read the compiled output,
+      # so the tests run first and the other checks reuse that build.
+      - name: Prepare back-end environment
+        uses: ./.github/actions/prepare-backend
+      - name: Unit tests of the areas the fork touches
+        env:
+          TZ: UTC
+        run: >-
+          bun run test-unit
+          frontend/src/metabase/visualizations
+          frontend/src/metabase/dashboard/components/DashCard
+          frontend/src/metabase/dashboard/hooks
+          frontend/src/metabase/viz-core
+      - name: ESLint
+        if: ${{ !cancelled() }}
+        run: bun run lint-eslint-pure
+      - name: Formatting
+        if: ${{ !cancelled() }}
+        run: bun run lint-format-pure
+      - name: Types
+        if: ${{ !cancelled() }}
+        run: bun run type-check-pure
+
+  text:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Full history is needed to compare against origin/master; skip blobs to keep the fetch small.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
+      - name: No em dash in added lines
+        run: |
+          set -euo pipefail
+          added=$(git diff --no-color -U0 origin/master...HEAD -- . \
+            ':(exclude).agents/skills/ponytail/**' ':(exclude).agents/skills/impeccable/**' \
+            | awk '/^diff --git /{h=1} /^@@/{h=0; next} !h && /^\+/')
+          if printf '%s\n' "$added" | grep -n $'\xe2\x80\x94'; then
+            echo "em dash (U+2014) found in lines added on top of origin/master"
+            exit 1
+          fi
+      - name: No tool attribution in fork commits
+        run: |
+          set -euo pipefail
+          messages=$(git log --format=%B origin/master..HEAD)
+          if printf '%s\n' "$messages" | grep -inE 'co-authored-by|claude-session|generated with'; then
+            echo "tool attribution found in a commit that is not in origin/master"
+            exit 1
+          fi
