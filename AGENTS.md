@@ -46,7 +46,7 @@ bun run lint-format-pure                      # formato (oxfmt); `bun run format
 bun run type-check-pure                       # tipos
 TZ=UTC bun run test-unit <ruta-del-spec>      # tests unitarios (Jest); siempre con TZ=UTC
 TZ=UTC bun run test-unit-keep-cljs <ruta>     # igual, sin recompilar ClojureScript
-CYPRESS_GUI=false bun run test-cypress --spec <archivo.cy.spec.ts>   # extremo a extremo, con backend en marcha
+TZ=UTC MB_EDITION=oss CYPRESS_GUI=false bun run test-cypress --spec <archivo.cy.spec.ts>   # extremo a extremo; arranca su propio backend en 4000, necesita Docker Desktop abierto y el frontend en 8080
 ```
 
 El build de producción es el de Metabase; el fork no lo cambia.
