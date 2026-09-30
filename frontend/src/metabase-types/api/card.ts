@@ -159,6 +159,12 @@ export type SeriesOrderSetting = {
   color?: string;
 };
 
+/** Fork setting (spec 001, RF-3): one metric offered by the dashcard metric selector. */
+export type MetricSelectorMetric = {
+  key: string;
+  enabled: boolean;
+};
+
 export type ConditionalFormattingCommonOperator = "is-null" | "not-null";
 export type ConditionalFormattingComparisonOperator =
   | "="
@@ -406,6 +412,11 @@ export type VisualizationSettings = {
    * numeric columns and Metabase should not infer the metrics.
    */
   "graph.metrics"?: string[];
+
+  /** Fork settings (spec 001, RF-3): metric selector buttons on a dashcard. Keys are `graph.metrics` names. */
+  "graph.metric_selector.enabled"?: boolean;
+  "graph.metric_selector.metrics"?: MetricSelectorMetric[];
+  "graph.metric_selector.default"?: string;
 
   /** Per-series labels, colors, and display tweaks. Keys are data-dependent. */
   series_settings?: Record<string, SeriesSettings | undefined>;
