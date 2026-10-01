@@ -8,6 +8,42 @@ export type MetricSelectorState = {
   defaultKey: string;
 };
 
+/** The `graph.metrics` keys that still are columns of the result, in graph order. */
+export function getMetricKeysInResult(
+  rawSeries: RawSeries,
+  settings: VisualizationSettings,
+): string[] {
+  const cols = rawSeries[0]?.data?.cols ?? [];
+  return (settings["graph.metrics"] ?? []).filter((key) =>
+    cols.some((col) => col.name === key),
+  );
+}
+
+/** Whether a chart can have a selector: one question, no breakout, two or more metrics. */
+export function isMetricSelectorApplicable(
+  rawSeries: RawSeries,
+  settings: VisualizationSettings,
+): boolean {
+  return (
+    rawSeries.length === 1 &&
+    (settings["graph.dimensions"] ?? []).filter(Boolean).length <= 1 &&
+    getMetricKeysInResult(rawSeries, settings).length >= 2
+  );
+}
+
+/** Visible name of a metric: its series title, else its column name, else the key. */
+export function getMetricLabel(
+  rawSeries: RawSeries,
+  settings: VisualizationSettings,
+  key: string,
+): string {
+  return (
+    settings.series_settings?.[key]?.title ||
+    rawSeries[0]?.data?.cols.find((col) => col.name === key)?.display_name ||
+    key
+  );
+}
+
 /**
  * Decides whether the selector applies to a series and, if so, which buttons it
  * has and which one is the initial choice. Returns null when it does not apply:
@@ -17,21 +53,14 @@ export function getMetricSelectorState(
   rawSeries: RawSeries,
   settings: VisualizationSettings,
 ): MetricSelectorState | null {
-  if (rawSeries.length !== 1 || !settings["graph.metric_selector.enabled"]) {
-    return null;
-  }
-  if ((settings["graph.dimensions"] ?? []).filter(Boolean).length > 1) {
-    return null;
-  }
-
-  const cols = rawSeries[0].data.cols;
-  const metricsInResult = (settings["graph.metrics"] ?? []).filter((key) =>
-    cols.some((col) => col.name === key),
-  );
-  if (metricsInResult.length < 2) {
+  if (
+    !settings["graph.metric_selector.enabled"] ||
+    !isMetricSelectorApplicable(rawSeries, settings)
+  ) {
     return null;
   }
 
+  const metricsInResult = getMetricKeysInResult(rawSeries, settings);
   const configured =
     settings["graph.metric_selector.metrics"] ??
     metricsInResult.map((key) => ({ key, enabled: true }));
@@ -41,11 +70,6 @@ export function getMetricSelectorState(
   if (included.length < 2) {
     return null;
   }
-
-  const label = (key: string) =>
-    settings.series_settings?.[key]?.title ||
-    cols.find((col) => col.name === key)?.display_name ||
-    key;
 
   const configuredDefault = settings["graph.metric_selector.default"];
   const defaultKey =
@@ -57,7 +81,7 @@ export function getMetricSelectorState(
   return {
     metrics: included.map((metric) => ({
       key: metric.key,
-      label: label(metric.key),
+      label: getMetricLabel(rawSeries, settings, metric.key),
     })),
     defaultKey,
   };
