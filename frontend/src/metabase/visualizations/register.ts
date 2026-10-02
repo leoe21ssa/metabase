@@ -34,6 +34,7 @@ import { ChartSettingInput } from "./components/settings/ChartSettingInput";
 import { ChartSettingInputNumeric } from "./components/settings/ChartSettingInputNumeric";
 import ChartSettingLinkUrlInput from "./components/settings/ChartSettingLinkUrlInput";
 import { ChartSettingMaxCategories } from "./components/settings/ChartSettingMaxCategories";
+import { ChartSettingMetricSelectorMetrics } from "./components/settings/ChartSettingMetricSelectorMetrics";
 import { ChartSettingMultiSelect } from "./components/settings/ChartSettingMultiSelect";
 import { chartSettingNestedSettings } from "./components/settings/ChartSettingNestedSettings";
 import { ChartSettingNumberInput } from "./components/settings/ChartSettingNumberInput";
@@ -211,6 +212,7 @@ function registerVisualizationSettingWidgets() {
     enumToggle: ChartSettingEnumToggle,
     goalInput: ChartSettingGoalInput,
     maxCategories: ChartSettingMaxCategories,
+    metricSelectorMetrics: ChartSettingMetricSelectorMetrics, // fork (spec 001)
     orderedSimple: ChartSettingOrderedSimple,
     segmentsEditor: ChartSettingSegmentsEditor,
     seriesOrder: ChartSettingSeriesOrder,

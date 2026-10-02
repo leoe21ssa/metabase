@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # Metabase Development Guide
 
 # Skills

@@ -1,6 +1,7 @@
 import _ from "underscore";
 
 import { mergeLazily } from "metabase/utils/merge-lazily";
+import { GRAPH_METRIC_SELECTOR_SETTINGS } from "metabase/visualizations/lib/metric-selector-settings";
 import {
   GRAPH_AXIS_SETTINGS,
   GRAPH_COLORS_SETTINGS,
@@ -125,4 +126,5 @@ export const COMBO_CHARTS_SETTINGS_DEFINITIONS: VisualizationSettingsDefinitions
     TOOLTIP_SETTINGS,
     LEGEND_SETTINGS,
     TIMELINE_EVENTS_SETTINGS,
+    GRAPH_METRIC_SELECTOR_SETTINGS, // fork (spec 001)
   );
